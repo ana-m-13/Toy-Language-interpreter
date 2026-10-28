@@ -29,4 +29,9 @@ public class MyStack<T> implements IStack<T> {
     public String toString() {
         return stack.toString();
     }
+
+    @Override
+    public java.util.List<T> toList() {
+        return new java.util.ArrayList<>(stack);
+    }
 }

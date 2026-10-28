@@ -37,4 +37,15 @@ public class MyDictionary<K, V> implements IDictionary<K, V> {
     public String toString() {
         return map.toString();
     }
+
+    @Override
+    public void remove(K key) throws ADTException {
+        if (!map.containsKey(key)) throw new ADTException("variable " + key + " is not defined");
+        map.remove(key);
+    }
+
+    @Override
+    public java.util.Map<K, V> toMap() {
+        return java.util.Map.copyOf(map);
+    }
 }

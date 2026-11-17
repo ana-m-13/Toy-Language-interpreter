@@ -6,8 +6,10 @@ import interpreter.model.PrgState;
 import interpreter.model.exp.ValueExp;
 import interpreter.model.type.BoolType;
 import interpreter.model.type.IntType;
+import interpreter.model.type.RefType;
 import interpreter.model.value.BoolValue;
 import interpreter.model.value.IntValue;
+import interpreter.model.value.RefValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,6 +21,15 @@ class StatementTest {
     void setUp() throws MyException {
         state = PrgState.of(new NopStmt());
         state.getExeStack().pop();
+    }
+
+    @Test
+    void referenceDeclarationsStartWithNullAddresses() throws MyException {
+        new VarDeclStmt("v", new RefType(new IntType())).execute(state);
+        new VarDeclStmt("a", new RefType(new RefType(new IntType()))).execute(state);
+
+        assertEquals(new RefValue(0, new IntType()), state.getSymTable().lookup("v"));
+        assertEquals(new RefValue(0, new RefType(new IntType())), state.getSymTable().lookup("a"));
     }
 
     @Test

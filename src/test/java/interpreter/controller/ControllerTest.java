@@ -63,14 +63,45 @@ class ControllerTest {
     }
 
     @Test
-    void logFileContainsTheFourSectionsInOrder() throws Exception {
+    void logFileContainsTheFiveSectionsInOrder() throws Exception {
         run(Examples.EX1);
         String log = Files.readString(dir.resolve("log.txt"));
         int a = log.indexOf("ExeStack:");
         int b = log.indexOf("SymTable:");
         int c = log.indexOf("Out:");
         int d = log.indexOf("FileTable:");
-        assertTrue(0 <= a && a < b && b < c && c < d);
+        int e = log.indexOf("Heap:");
+        assertTrue(0 <= a && a < b && b < c && c < d && d < e);
+    }
+
+    @Test
+    void heapIsLoggedInNumericAddressOrder() throws Exception {
+        PrgState state = PrgState.of(Examples.EX1);
+        assertTrue(state.getHeap().getContent().isEmpty());
+        for (int value = 1; value <= 12; value++) {
+            state.getHeap().allocate(new IntValue(value * 10));
+        }
+        var repo = new Repository(state, dir.resolve("heap-log.txt").toString());
+        repo.logPrgStateExec();
+
+        String log = Files.readString(dir.resolve("heap-log.txt"));
+        var expectedHeap = new StringBuilder("Heap:\n");
+        for (int address = 1; address <= 12; address++) {
+            expectedHeap.append(address).append(" --> ").append(address * 10).append('\n');
+        }
+        assertTrue(log.endsWith(expectedHeap + System.lineSeparator()));
+        assertTrue(state.toString().contains("Heap: " + state.getHeap()));
+    }
+
+    @Test
+    void programStatesHaveIndependentHeaps() {
+        PrgState first = PrgState.of(Examples.EX1);
+        PrgState second = PrgState.of(Examples.EX1);
+
+        first.getHeap().allocate(new IntValue(20));
+
+        assertTrue(second.getHeap().getContent().isEmpty());
+        assertEquals(1, second.getHeap().allocate(new IntValue(30)));
     }
 
     @Test
